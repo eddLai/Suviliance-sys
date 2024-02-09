@@ -115,18 +115,34 @@
         <div class="camera-container">
             <div class="camera-feed">Camera 1 Stream
                 <button class="replay-button" onclick="showReplayModal('modal1')">Replay</button>
+                <!-- Start recording button -->
+                <button onclick="startStopRecording(this, 0)">Start/Stop Recording</button>
+                <!-- Start replay button -->
+                <button onclick="replayRecording('camera_0.avi')">Replay Recording</button>
                 <img src="{{ url_for('video', camera_id=0) }}" width="100%" height="100%">
             </div>            
             <div class="camera-feed">Camera 2 Stream
                 <button class="replay-button" onclick="showReplayModal('modal2')">Replay</button>
+                <!-- Start recording button -->
+                <button onclick="startStopRecording(this, 1)">Start/Stop Recording</button>
+                <!-- Start replay button -->
+                <button onclick="replayRecording('camera_1.avi')">Replay Recording</button>
                 <img src="{{ url_for('video', camera_id=1) }}" width="100%" height="100%">
             </div>
             <div class="camera-feed">Camera 3 Stream
                 <button class="replay-button" onclick="showReplayModal('modal3')">Replay</button>
+                <!-- Start recording button -->
+                <button onclick="startStopRecording(this, 2)">Start/Stop Recording</button>
+                <!-- Start replay button -->
+                <button onclick="replayRecording('camera_2.avi')">Replay Recording</button>
                 <img src="{{ url_for('video', camera_id=2) }}" width="100%" height="100%">
             </div>
             <div class="camera-feed">Camera 4 Stream
                 <button class="replay-button" onclick="showReplayModal('modal4')">Replay</button>
+                <!-- Start recording button -->
+                <button onclick="startStopRecording(this, 3)">Start/Stop Recording</button>
+                <!-- Start replay button -->
+                <button onclick="replayRecording('camera_3.avi')">Replay Recording</button>
                 <img src="{{ url_for('video', camera_id=3) }}" width="100%" height="100%">
             </div>
         </div>
@@ -184,7 +200,33 @@
 
         // Start the blinking process for all replay buttons
         document.querySelectorAll('.replay-button').forEach(startRandomBlinkingForButton);
+        
+        // JavaScript函数用于开始/停止录制
+        function startStopRecording(button, camera_id) {
+            // 根据当前状态决定是开始还是停止录制
+            var action = button.textContent.includes('Start') ? 'start_recording' : 'stop_recording';
+            fetch(`/${action}/${camera_id}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 更新按钮文本
+                    button.textContent = action === 'start_recording' ? 'Stop Recording' : 'Start Recording';
+                    // 如果是开始录制，则保存文件名用于重播
+                    if (action === 'start_recording') {
+                        button.dataset.filename = data.filename;
+                    }
+                }
+            });
+        }
 
+        // JavaScript函数用于重播录制的视频
+        function replayRecording(filename) {
+            // 这里应该添加逻辑来播放视频
+            // 例如，设置一个video标签的src属性为后端提供的视频文件URL
+            var videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.src = `/replay/${filename}`;
+            videoPlayer.play();
+        }
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
