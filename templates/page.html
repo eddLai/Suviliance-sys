@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title>Camera Surveillance System - Interactive Adjusted</title>
+    <style>
+        .camera-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .camera-feed {
+            width: 48%;
+            height: 250px;
+            position: relative;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .camera-feed:hover {
+            z-index: 2;
+            transform: scale(1.2);
+            margin: -5% -5%;
+            width: 58%;
+            height: 310px;
+        }
+
+
+        .replay-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 20px;
+            height: 20px;
+            background-color: #007bff;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* @keyframes blink {
+            0%, 100% { background-color: #000dff; }
+            50% { background-color: #00a2ff; }
+        }
+
+        .replay-button.blink {
+            animation: blink 1s step-start 0s infinite;
+        } */
+    </style>
+</head>
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><strong>Camera Surveillance System</strong></li>
+        </ul>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#" role="button">Contact</a></li>
+        </ul>
+    </nav>
+    <main class="container">
+        <div class="camera-container">
+            <div class="camera-feed">Camera 1 Stream
+                <button class="replay-button" onclick="showReplayModal('modal1')">Replay</button>
+                <img src="{{ url_for('video', camera_id=0) }}" width="100%" height="100%">
+            </div>            
+            <div class="camera-feed">Camera 2 Stream
+                <button class="replay-button" onclick="showReplayModal('modal2')">Replay</button>
+                <img src="{{ url_for('video', camera_id=1) }}" width="100%" height="100%">
+            </div>
+            <div class="camera-feed">Camera 3 Stream
+                <button class="replay-button" onclick="showReplayModal('modal3')">Replay</button>
+                <img src="{{ url_for('video', camera_id=2) }}" width="100%" height="100%">
+            </div>
+            <div class="camera-feed">Camera 4 Stream
+                <button class="replay-button" onclick="showReplayModal('modal4')">Replay</button>
+                <img src="{{ url_for('video', camera_id=3) }}" width="100%" height="100%">
+            </div>
+        </div>
+        <!-- Replay Modals -->
+        <div id="modal1" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('modal1')">&times;</span>
+                <p>Camera 1 Replay Content</p>
+            </div>
+        </div>
+        <div id="modal2" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('modal2')">&times;</span>
+                <p>Camera 2 Replay Content</p>
+            </div>
+        </div>
+        <div id="modal3" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('modal3')">&times;</span>
+                <p>Camera 3 Replay Content</p>
+            </div>
+        </div>
+        <div id="modal4" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('modal4')">&times;</span>
+                <p>Camera 4 Replay Content</p>
+            </div>
+        </div>
+    </main>
+    <script>
+        function showReplayModal(modalId) {
+            document.getElementById(modalId).style.display = "block";
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+        // Function to make a single replay button blink
+        function blinkReplayButton(button) {
+            button.style.animation = 'none'; // Reset the animation
+            setTimeout(function() { // Trigger a reflow in between
+                button.style.animation = 'blink 1s ease';
+            }, 10);
+        }
+
+        // Function to start blinking at random intervals for each button
+        function startRandomBlinkingForButton(button) {
+            // Set a random time for the blink to occur, between 1 to 5 seconds
+            var randomTime = Math.floor(Math.random() * 5000) + 1000;
+            setTimeout(function() {
+                blinkReplayButton(button);
+                startRandomBlinkingForButton(button); // Schedule the next blink for this button
+            }, randomTime);
+        }
+
+        // Start the blinking process for all replay buttons
+        document.querySelectorAll('.replay-button').forEach(startRandomBlinkingForButton);
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!("Notification" in window)) {
+                alert("This browser does not support desktop notification");
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        var notification = new Notification("Hi there!", {
+                            body: "We detected some unusual activities in your camera surveillance system. Click here to view the live stream.",
+                            icon: "a-simple-button.png"
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

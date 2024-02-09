@@ -1,0 +1,5 @@
+# 忽略 temp 資料夾
+temp/
+
+# 忽略 ngrok.exe 文件
+ngrok.exe
