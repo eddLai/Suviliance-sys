@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Streaming</title>
+</head>
+<body>
+    <h1>Video Streaming Demo</h1>
+    <img id="video" src="{{ url_for('video', camera_id=0) }}">
+    <button id="recordButton" onclick="toggleRecording()">Start Recording</button>
+
+    <script>
+        let isRecording = false; // 初始状态为未录制
+
+        function toggleRecording() {
+            // 禁用按钮，防止重复点击
+            document.getElementById('recordButton').disabled = true;
+
+            if (isRecording) {
+                // 如果当前是录制状态，发送停止录制请求
+                fetch('/stop_recording/0') // Assuming camera_id is 0
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('recordButton').innerText = 'Start Recording';
+                        isRecording = false; // 更新状态为未录制
+                    } else {
+                        alert('Stop recording failed.');
+                    }
+                })
+                .finally(() => {
+                    document.getElementById('recordButton').disabled = false; // 请求完成后重新启用按钮
+                });
+            } else {
+                // 如果当前不是录制状态，发送开始录制请求
+                fetch('/start_recording/0') // Assuming camera_id is 0
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('recordButton').innerText = 'Stop Recording';
+                        isRecording = true; // 更新状态为正在录制
+                    } else {
+                        alert('Start recording failed.');
+                    }
+                })
+                .finally(() => {
+                    document.getElementById('recordButton').disabled = false; // 请求完成后重新启用按钮
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -25,7 +25,7 @@
 
         .camera-feed:hover {
             z-index: 2;
-            transform: scale(1.2);
+            transform: scale(1.05);
             margin: -5% -5%;
             width: 58%;
             height: 310px;
@@ -39,6 +39,24 @@
             width: 20px;
             height: 20px;
             background-color: #007bff;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+        }
+
+        .recording-button {
+            position: absolute;
+            top: 10px;
+            left: 45px;
+            width: 20px;
+            height: 20px;
+            background-color: #ff0000;
             border-radius: 50%;
             color: white;
             display: flex;
@@ -89,15 +107,6 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
-
-        /* @keyframes blink {
-            0%, 100% { background-color: #000dff; }
-            50% { background-color: #00a2ff; }
-        }
-
-        .replay-button.blink {
-            animation: blink 1s step-start 0s infinite;
-        } */
     </style>
 </head>
 <body>
@@ -115,34 +124,22 @@
         <div class="camera-container">
             <div class="camera-feed">Camera 1 Stream
                 <button class="replay-button" onclick="showReplayModal('modal1')">Replay</button>
-                <!-- Start recording button -->
-                <button onclick="startStopRecording(this, 0)">Start/Stop Recording</button>
-                <!-- Start replay button -->
-                <button onclick="replayRecording('camera_0.avi')">Replay Recording</button>
+                <button class="recording-button" data-camera-id="0" data-recording="false">Record Camera 0</button>
                 <img src="{{ url_for('video', camera_id=0) }}" width="100%" height="100%">
             </div>            
             <div class="camera-feed">Camera 2 Stream
                 <button class="replay-button" onclick="showReplayModal('modal2')">Replay</button>
-                <!-- Start recording button -->
-                <button onclick="startStopRecording(this, 1)">Start/Stop Recording</button>
-                <!-- Start replay button -->
-                <button onclick="replayRecording('camera_1.avi')">Replay Recording</button>
+                <button class="recording-button" data-camera-id="1" data-recording="false">Record Camera 1</button>
                 <img src="{{ url_for('video', camera_id=1) }}" width="100%" height="100%">
             </div>
             <div class="camera-feed">Camera 3 Stream
                 <button class="replay-button" onclick="showReplayModal('modal3')">Replay</button>
-                <!-- Start recording button -->
-                <button onclick="startStopRecording(this, 2)">Start/Stop Recording</button>
-                <!-- Start replay button -->
-                <button onclick="replayRecording('camera_2.avi')">Replay Recording</button>
+                <button class="recording-button" data-camera-id="2" data-recording="false">Record Camera 2</button>
                 <img src="{{ url_for('video', camera_id=2) }}" width="100%" height="100%">
             </div>
             <div class="camera-feed">Camera 4 Stream
                 <button class="replay-button" onclick="showReplayModal('modal4')">Replay</button>
-                <!-- Start recording button -->
-                <button onclick="startStopRecording(this, 3)">Start/Stop Recording</button>
-                <!-- Start replay button -->
-                <button onclick="replayRecording('camera_3.avi')">Replay Recording</button>
+                <button class="recording-button" data-camera-id="3" data-recording="false">Record Camera 3</button>
                 <img src="{{ url_for('video', camera_id=3) }}" width="100%" height="100%">
             </div>
         </div>
@@ -201,34 +198,35 @@
         // Start the blinking process for all replay buttons
         document.querySelectorAll('.replay-button').forEach(startRandomBlinkingForButton);
         
-        // JavaScript函数用于开始/停止录制
-        function startStopRecording(button, camera_id) {
-            // 根据当前状态决定是开始还是停止录制
-            var action = button.textContent.includes('Start') ? 'start_recording' : 'stop_recording';
-            fetch(`/${action}/${camera_id}`, { method: 'POST' })
+        document.querySelectorAll('.recording-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const cameraId = this.getAttribute('data-camera-id');
+                const isRecording = this.getAttribute('data-recording') === 'true';
+                toggleRecording(cameraId, isRecording, this);
+            });
+        });
+
+        function toggleRecording(cameraId, isRecording, button) {
+            button.disabled = true;
+
+            const actionUrl = isRecording ? `/stop_recording/${cameraId}` : `/start_recording/${cameraId}`;
+
+            fetch(actionUrl)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // 更新按钮文本
-                    button.textContent = action === 'start_recording' ? 'Stop Recording' : 'Start Recording';
-                    // 如果是开始录制，则保存文件名用于重播
-                    if (action === 'start_recording') {
-                        button.dataset.filename = data.filename;
-                    }
+                    const newStatus = !isRecording;
+                    button.setAttribute('data-recording', newStatus.toString());
+                    button.innerText = newStatus ? `Stop Recording Camera ${cameraId}` : `Record Camera ${cameraId}`;
+                } else {
+                    alert(`Failed to toggle recording for camera ${cameraId}.`);
                 }
+            })
+            .finally(() => {
+                button.disabled = false;
             });
         }
 
-        // JavaScript函数用于重播录制的视频
-        function replayRecording(filename) {
-            // 这里应该添加逻辑来播放视频
-            // 例如，设置一个video标签的src属性为后端提供的视频文件URL
-            var videoPlayer = document.getElementById('videoPlayer');
-            videoPlayer.src = `/replay/${filename}`;
-            videoPlayer.play();
-        }
-    </script>
-    <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (!("Notification" in window)) {
                 alert("This browser does not support desktop notification");
