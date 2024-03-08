@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Replay</title>
+</head>
+<body>
+    <h1>Select Video for Replay</h1>
+    <ul>
+        {% for video in videos %}
+            <li>{{ video.title }} <button onclick="playVideo('{{ video.url }}')">Play</button></li>
+        {% endfor %}
+    </ul>
+
+    <video id="videoPlayer" controls style="width: 100%; max-width: 600px; margin: auto;">
+        <source src="" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <script>
+        function playVideo(url) {
+            const player = document.getElementById('videoPlayer');
+            player.src = url;
+            player.style.display = 'block';
+            player.load(); // Ensure the video reloads if it's the same as the previous
+            player.play(); // Automatically play the selected video
+        }
+    </script>
+</body>
+</html>

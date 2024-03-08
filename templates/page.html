@@ -147,7 +147,9 @@
         <div id="modal1" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeModal('modal1')">&times;</span>
-                <p>Camera 1 Replay Content</p>
+                <h5>choose the vedio</h5>
+                <!-- 视频列表容器 -->
+                <ul id="videoList"></ul>
             </div>
         </div>
         <div id="modal2" class="modal">
@@ -168,6 +170,10 @@
                 <p>Camera 4 Replay Content</p>
             </div>
         </div>
+        <video id="videoPlayer" controls>
+            <source src="" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
     </main>
     <script>
         function showReplayModal(modalId) {
