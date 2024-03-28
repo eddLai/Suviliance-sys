@@ -30,7 +30,8 @@ def generate_frames(camera_id):
 # 建立writer
 def start_video_writer(camera_id):
     filename = f"camera_{camera_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.mp4"
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    # 尝试使用H.264编码
+    fourcc = cv2.VideoWriter_fourcc(*'X264')
     out = cv2.VideoWriter(filename, fourcc, FRAME_RATE, RESOLUTION)
     return out, filename
 

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Stream with Controls</title>
+    <style>
+        #controls {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <img id="videoFeed" src="/video_feed">
+    <div id="controls">
+        <button id="playButton">Play</button>
+        <button id="pauseButton">Pause</button>
+        <!-- 假设视频总长度为100秒，可以根据实际情况调整 -->
+        <input type="range" id="progressBar" min="0" max="100" value="0">
+        <span id="currentTime">0</span>s / <span id="totalTime">100</span>s
+    </div>
+    <script>
+        document.getElementById('playButton').addEventListener('click', function() {
+            // 播放视频的逻辑
+            alert("Play button clicked. Implement play functionality based on your setup.");
+        });
+
+        document.getElementById('pauseButton').addEventListener('click', function() {
+            // 暂停视频的逻辑
+            alert("Pause button clicked. Implement pause functionality based on your setup.");
+        });
+
+        document.getElementById('progressBar').addEventListener('input', function() {
+            const progressBar = document.getElementById('progressBar');
+            const currentTime = document.getElementById('currentTime');
+            currentTime.innerText = progressBar.value;
+            // 根据进度条调整视频播放位置的逻辑
+            alert(`Seek to ${progressBar.value}s. Implement seeking functionality based on your setup.`);
+        });
+    </script>
+</body>
+</html>
