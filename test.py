@@ -1,6 +1,6 @@
 
 import cv2
-cap = cv2.VideoCapture(3)                         # 讀取電腦攝影機鏡頭影像。
+cap = cv2.VideoCapture(2)                         # 讀取電腦攝影機鏡頭影像。
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))    # 取得影像寬度
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))  # 取得影像高度fourcc = cv2.VideoWriter_fourcc(*'avc1')
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')          # 設定影片的格式為 MJPG

@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, render_template, Response, send_from_directory
 import cv2
 from datetime import datetime
+import subprocess
+import os
 
 FRAME_RATE = 20.0
 RESOLUTION = (640, 480)
@@ -19,8 +21,12 @@ def generate_frames(camera_id):
             break
         
         if camera_records[camera_id]['is_recording']:
-            video_writer = camera_records[camera_id]['video_writer']
-            video_writer.write(frame)
+            process = camera_records[camera_id]['video_writer']
+            try:
+                process.stdin.write(frame.tobytes())
+            except BrokenPipeError:
+                # FFmpeg进程已关闭
+                pass
         
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
@@ -29,10 +35,28 @@ def generate_frames(camera_id):
 
 # 建立writer
 def start_video_writer(camera_id):
+    output_dir = os.path.join(app.root_path, 'static', 'videos')
+    os.makedirs(output_dir, exist_ok=True)
     filename = f"camera_{camera_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.mp4"
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(filename, fourcc, FRAME_RATE, RESOLUTION)
-    return out, filename
+    filepath = os.path.join(output_dir, filename)
+    command = [
+        'ffmpeg',
+        '-y',  # 覆盖输出文件（如果存在）
+        '-f', 'rawvideo',  # 输入格式
+        '-vcodec','rawvideo',  # 输入编解码器
+        '-pix_fmt', 'bgr24',  # OpenCV的默认像素格式
+        '-s', '{}x{}'.format(*RESOLUTION),  # 分辨率
+        '-r', str(FRAME_RATE),  # 帧率
+        '-i', '-',  # 从stdin读取输入
+        '-c:v', 'libx264',  # 输出视频编解码器
+        '-pix_fmt', 'yuv420p',  # 输出像素格式，yuv420p是与大多数播放器兼容的格式
+        '-preset', 'ultrafast',  # 编码速度与压缩率的平衡
+        '-f', 'mp4',  # 输出格式
+        filepath
+    ]
+    # 创建FFmpeg进程
+    p = subprocess.Popen(command, stdin=subprocess.PIPE)
+    return p, filepath
 
 # 為特定相機初始化writer
 @app.route('/start_recording/<camera_id>', methods=['GET'])
@@ -57,9 +81,25 @@ def stop_recording(camera_id):
     camera_id = int(camera_id)
     if camera_id in camera_records and camera_records[camera_id]['is_recording']:
         camera_records[camera_id]['is_recording'] = False
-        camera_records[camera_id]['video_writer'].release()
+        # 关闭FFmpeg进程的stdin
+        camera_records[camera_id]['video_writer'].stdin.close()
+        # 等待FFmpeg进程结束
+        camera_records[camera_id]['video_writer'].wait()
+        # 释放相机资源，如果需要
+        # camera_records[camera_id]['camera'].release()
         return jsonify(success=True)
     return jsonify(success=False, message="Recording not started or already stopped")
+
+@app.route('/list_videos/<int:camera_id>')
+def list_videos(camera_id):
+    output_dir = os.path.join(app.root_path, 'static', 'videos')
+    # 确保目录存在
+    if not os.path.exists(output_dir):
+        return jsonify(success=False, message="Video directory does not exist")
+
+    # 筛选出特定相机ID的视频文件
+    videos = [file for file in os.listdir(output_dir) if file.startswith(f"camera_{camera_id}_")]
+    return jsonify(success=True, videos=videos)
 
 @app.route('/video/<int:camera_id>')
 def video(camera_id):

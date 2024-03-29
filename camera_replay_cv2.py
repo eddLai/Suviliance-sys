@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 # 确保这里是你的视频文件路径
-VIDEO_PATH = 'output01.mp4'
+VIDEO_PATH = r'D:\testforstreaming\static\videos\camera_0_20240329214549.mp4'
 cap = cv2.VideoCapture(VIDEO_PATH)
 
 @app.route('/')
