@@ -35,9 +35,10 @@ def generate_frames(camera_id):
 
 # 建立writer
 def start_video_writer(camera_id):
-    output_dir = os.path.join(app.root_path, 'static', 'videos')
-    os.makedirs(output_dir, exist_ok=True)
-    filename = f"camera_{camera_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.mp4"
+    output_dir_base = os.path.join(app.root_path, 'static', 'videos')
+    output_dir = os.path.join(output_dir_base, f"camera_{camera_id}")  # 每个相机的专用文件夹
+    os.makedirs(output_dir, exist_ok=True)  # 如果目录不存在，则创建它
+    filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}.mp4"
     filepath = os.path.join(output_dir, filename)
     command = [
         'ffmpeg',
@@ -49,12 +50,11 @@ def start_video_writer(camera_id):
         '-r', str(FRAME_RATE),  # 帧率
         '-i', '-',  # 从stdin读取输入
         '-c:v', 'libx264',  # 输出视频编解码器
-        '-pix_fmt', 'yuv420p',  # 输出像素格式，yuv420p是与大多数播放器兼容的格式
+        '-pix_fmt', 'yuv420p',  # 输出像素格式
         '-preset', 'ultrafast',  # 编码速度与压缩率的平衡
         '-f', 'mp4',  # 输出格式
         filepath
     ]
-    # 创建FFmpeg进程
     p = subprocess.Popen(command, stdin=subprocess.PIPE)
     return p, filepath
 
@@ -92,13 +92,12 @@ def stop_recording(camera_id):
 
 @app.route('/list_videos/<int:camera_id>')
 def list_videos(camera_id):
-    output_dir = os.path.join(app.root_path, 'static', 'videos')
-    # 确保目录存在
+    output_dir_base = os.path.join(app.root_path, 'static', 'videos')
+    output_dir = os.path.join(output_dir_base, f"camera_{camera_id}")  # 根据相机ID定位文件夹
     if not os.path.exists(output_dir):
         return jsonify(success=False, message="Video directory does not exist")
 
-    # 筛选出特定相机ID的视频文件
-    videos = [file for file in os.listdir(output_dir) if file.startswith(f"camera_{camera_id}_")]
+    videos = [file for file in os.listdir(output_dir)]
     return jsonify(success=True, videos=videos)
 
 @app.route('/video/<int:camera_id>')

@@ -107,6 +107,11 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
+
+        #videoPlayer {
+            width: 100%;  /* 宽度自适应屏幕 */
+            z-index: 10; /* 确保播放器位于页面元素之上 */
+        }
     </style>
 </head>
 <body>
@@ -123,22 +128,22 @@
     <main class="container">
         <div class="camera-container">
             <div class="camera-feed">Camera 1 Stream
-                <button class="replay-button" onclick="showReplayModal('modal1')">Replay</button>
+                <button class="replay-button" onclick="showReplayModal('modal1', 0)">Replay</button>
                 <button class="recording-button" data-camera-id="0" data-recording="false">Record Camera 0</button>
                 <img src="{{ url_for('video', camera_id=0) }}" width="100%" height="100%">
             </div>            
             <div class="camera-feed">Camera 2 Stream
-                <button class="replay-button" onclick="showReplayModal('modal2')">Replay</button>
+                <button class="replay-button" onclick="showReplayModal('modal2', 1)">Replay</button>
                 <button class="recording-button" data-camera-id="1" data-recording="false">Record Camera 1</button>
                 <img src="{{ url_for('video', camera_id=1) }}" width="100%" height="100%">
             </div>
             <div class="camera-feed">Camera 3 Stream
-                <button class="replay-button" onclick="showReplayModal('modal3')">Replay</button>
+                <button class="replay-button" onclick="showReplayModal('modal3' ,2)">Replay</button>
                 <button class="recording-button" data-camera-id="2" data-recording="false">Record Camera 2</button>
                 <img src="{{ url_for('video', camera_id=2) }}" width="100%" height="100%">
             </div>
             <div class="camera-feed">Camera 4 Stream
-                <button class="replay-button" onclick="showReplayModal('modal4')">Replay</button>
+                <button class="replay-button" onclick="showReplayModal('modal4', 3)">Replay</button>
                 <button class="recording-button" data-camera-id="3" data-recording="false">Record Camera 3</button>
                 <img src="{{ url_for('video', camera_id=3) }}" width="100%" height="100%">
             </div>
@@ -147,27 +152,33 @@
         <div id="modal1" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeModal('modal1')">&times;</span>
-                <h5>choose the vedio</h5>
-                <!-- 视频列表容器 -->
-                <ul id="videoList"></ul>
+                <h5>Choose the video</h5>
+                <!-- 为每个相机提供一个唯一的视频列表容器ID -->
+                <ul id="videoListCamera0"></ul>
             </div>
         </div>
         <div id="modal2" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="closeModal('modal2')">&times;</span>
-                <p>Camera 2 Replay Content</p>
+                <span class="close" onclick="closeModal('modal1')">&times;</span>
+                <h5>Choose the video</h5>
+                <!-- 为每个相机提供一个唯一的视频列表容器ID -->
+                <ul id="videoListCamera1"></ul>
             </div>
         </div>
         <div id="modal3" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="closeModal('modal3')">&times;</span>
-                <p>Camera 3 Replay Content</p>
+                <span class="close" onclick="closeModal('modal1')">&times;</span>
+                <h5>Choose the video</h5>
+                <!-- 为每个相机提供一个唯一的视频列表容器ID -->
+                <ul id="videoListCamera2"></ul>
             </div>
         </div>
         <div id="modal4" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="closeModal('modal4')">&times;</span>
-                <p>Camera 4 Replay Content</p>
+                <span class="close" onclick="closeModal('modal1')">&times;</span>
+                <h5>Choose the video</h5>
+                <!-- 为每个相机提供一个唯一的视频列表容器ID -->
+                <ul id="videoListCamera3"></ul>
             </div>
         </div>
         <video id="videoPlayer" controls>
@@ -176,8 +187,35 @@
         </video>
     </main>
     <script>
-        function showReplayModal(modalId) {
-            document.getElementById(modalId).style.display = "block";
+       function showReplayModal(modalId, cameraId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = "block";  // 显示模态框
+
+            const videoListElement = modal.querySelector('ul');  // 确保每个模态框都有自己的 ul 元素
+            fetch(`/list_videos/${cameraId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.videos) {
+                        videoListElement.innerHTML = '';  // 清空现有列表
+                        data.videos.forEach(video => {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = video;
+                            listItem.style.cursor = 'pointer';
+                            listItem.onclick = () => playVideo(cameraId, video);  // 添加点击事件
+                            videoListElement.appendChild(listItem);
+                        });
+                    } else {
+                        alert('Failed to load video list.');
+                    }
+                });
+        }
+
+        function playVideo(cameraId, videoFileName) {
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.src = `/static/videos/camera_${cameraId}/${videoFileName}`;  // 更新路径以包含子文件夹
+            videoPlayer.load();  // 重新加载视频源
+            videoPlayer.play();  // 播放视频
+            closeModal(`modal${cameraId+1}`);  // 假设modalId以1开始而cameraId以0开始
         }
 
         function closeModal(modalId) {
