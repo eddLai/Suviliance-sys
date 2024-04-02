@@ -58,6 +58,17 @@ def start_video_writer(camera_id):
     p = subprocess.Popen(command, stdin=subprocess.PIPE)
     return p, filepath
 
+def detect_cameras(limit=10):
+    available_cameras = []
+    for i in range(limit):
+        cap = cv2.VideoCapture(i)
+        if cap.isOpened():
+            ret, frame = cap.read()
+            if ret:
+                available_cameras.append(i)
+            cap.release()
+    return available_cameras
+
 # 為特定相機初始化writer
 @app.route('/start_recording/<camera_id>', methods=['GET'])
 def start_recording(camera_id):
@@ -107,7 +118,8 @@ def video(camera_id):
 
 @app.route('/')
 def index():
-    return render_template('page.html')
+    camera_ids = detect_cameras()
+    return render_template('page.html', camera_ids=camera_ids)
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)

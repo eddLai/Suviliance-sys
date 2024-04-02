@@ -127,60 +127,24 @@
     </nav>
     <main class="container">
         <div class="camera-container">
-            <div class="camera-feed">Camera 1 Stream
-                <button class="replay-button" onclick="showReplayModal('modal1', 0)">Replay</button>
-                <button class="recording-button" data-camera-id="0" data-recording="false">Record Camera 0</button>
-                <img src="{{ url_for('video', camera_id=0) }}" width="100%" height="100%">
-            </div>            
-            <div class="camera-feed">Camera 2 Stream
-                <button class="replay-button" onclick="showReplayModal('modal2', 1)">Replay</button>
-                <button class="recording-button" data-camera-id="1" data-recording="false">Record Camera 1</button>
-                <img src="{{ url_for('video', camera_id=1) }}" width="100%" height="100%">
+            {% for camera_id in camera_ids %}
+            <div class="camera-feed">Camera {{ camera_id }} Stream
+                <button class="replay-button" onclick="showReplayModal('modal{{ camera_id }}', {{ camera_id }})">Replay</button>
+                <button class="recording-button" data-camera-id="{{ camera_id }}" data-recording="false">Record Camera {{ camera_id }}</button>
+                <img src="{{ url_for('video', camera_id=camera_id) }}" width="100%" height="100%">
             </div>
-            <div class="camera-feed">Camera 3 Stream
-                <button class="replay-button" onclick="showReplayModal('modal3' ,2)">Replay</button>
-                <button class="recording-button" data-camera-id="2" data-recording="false">Record Camera 2</button>
-                <img src="{{ url_for('video', camera_id=2) }}" width="100%" height="100%">
-            </div>
-            <div class="camera-feed">Camera 4 Stream
-                <button class="replay-button" onclick="showReplayModal('modal4', 3)">Replay</button>
-                <button class="recording-button" data-camera-id="3" data-recording="false">Record Camera 3</button>
-                <img src="{{ url_for('video', camera_id=3) }}" width="100%" height="100%">
-            </div>
+            {% endfor %}
         </div>
-        <!-- Replay Modals -->
-        <div id="modal1" class="modal">
+        <!-- Dynamically create Replay Modals based on camera_ids -->
+        {% for camera_id in camera_ids %}
+        <div id="modal{{ camera_id }}" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="closeModal('modal1')">&times;</span>
+                <span class="close" onclick="closeModal('modal{{ camera_id }}')">&times;</span>
                 <h5>Choose the video</h5>
-                <!-- 为每个相机提供一个唯一的视频列表容器ID -->
-                <ul id="videoListCamera0"></ul>
+                <ul id="videoListCamera{{ camera_id }}"></ul>
             </div>
         </div>
-        <div id="modal2" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal('modal1')">&times;</span>
-                <h5>Choose the video</h5>
-                <!-- 为每个相机提供一个唯一的视频列表容器ID -->
-                <ul id="videoListCamera1"></ul>
-            </div>
-        </div>
-        <div id="modal3" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal('modal1')">&times;</span>
-                <h5>Choose the video</h5>
-                <!-- 为每个相机提供一个唯一的视频列表容器ID -->
-                <ul id="videoListCamera2"></ul>
-            </div>
-        </div>
-        <div id="modal4" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal('modal1')">&times;</span>
-                <h5>Choose the video</h5>
-                <!-- 为每个相机提供一个唯一的视频列表容器ID -->
-                <ul id="videoListCamera3"></ul>
-            </div>
-        </div>
+        {% endfor %}
         <video id="videoPlayer" controls>
             <source src="" type="video/mp4">
             Your browser does not support the video tag.
