@@ -179,7 +179,7 @@
             videoPlayer.src = `/static/videos/camera_${cameraId}/${videoFileName}`;  // 更新路径以包含子文件夹
             videoPlayer.load();  // 重新加载视频源
             videoPlayer.play();  // 播放视频
-            closeModal(`modal${cameraId+1}`);  // 假设modalId以1开始而cameraId以0开始
+            closeModal(`modal${cameraId}`);  // 假设modalId以1开始而cameraId以0开始
         }
 
         function closeModal(modalId) {
