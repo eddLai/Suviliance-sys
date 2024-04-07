@@ -3,6 +3,10 @@ import cv2
 from datetime import datetime
 import subprocess
 import os
+import tkinter as tk
+from tkinter import messagebox
+import requests
+import threading
 
 FRAME_RATE = 20.0
 RESOLUTION = (640, 480)
@@ -116,10 +120,48 @@ def video(camera_id):
     return Response(generate_frames(camera_id),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/trigger_notification')
+def trigger_notification():
+    # 标记通知已触发，等待前端轮询检查
+    global notification_triggered
+    notification_triggered = True
+    return jsonify(success=True, message="Notification will be triggered")
+
+# 前端轮询此路由以检查是否触发通知
+@app.route('/check_notification')
+def check_notification():
+    global notification_triggered
+    if notification_triggered:
+        notification_triggered = False  # 确保重置状态
+        return jsonify(trigger=True)
+    else:
+        return jsonify(trigger=False)
+
 @app.route('/')
 def index():
     camera_ids = detect_cameras()
     return render_template('page.html', camera_ids=camera_ids)
 
+def run_gui():
+    def trigger_flask_notification():
+        try:
+            # 通过发送请求到 Flask 应用的 /trigger_notification 路由来触发通知
+            response = requests.get('http://127.0.0.1:5000/trigger_notification')
+            if response.status_code == 200:
+                print("Notification trigger sent to Flask.")
+            else:
+                print(f"Failed to send trigger. Status Code: {response.status_code}")
+        except Exception as e:
+            print(f"Error connecting to Flask server: {e}")
+
+    # GUI 创建部分
+    root = tk.Tk()
+    root.title("Trigger Notification")
+    trigger_button = tk.Button(root, text="触发通知", command=trigger_flask_notification)
+    trigger_button.pack(pady=20)
+    root.mainloop()
+
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
+    # Flask 应用运行在主线程
+    threading.Thread(target=run_gui, daemon=True).start()  # GUI 运行在一个独立的线程中
+    app.run(debug=True, threaded=True, use_reloader=False)

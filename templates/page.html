@@ -234,21 +234,35 @@
                 button.disabled = false;
             });
         }
-
+        
         document.addEventListener('DOMContentLoaded', function() {
-            if (!("Notification" in window)) {
-                alert("This browser does not support desktop notification");
-            } else if (Notification.permission !== "denied") {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        var notification = new Notification("Hi there!", {
-                            body: "We detected some unusual activities in your camera surveillance system. Click here to view the live stream.",
-                            icon: "a-simple-button.png"
-                        });
-                    }
-                });
+            // 请求通知权限
+            if ("Notification" in window) {
+                Notification.requestPermission();
             }
+            
+            // 开始轮询检查通知
+            checkForNotification();
         });
+
+        function checkForNotification() {
+            fetch('/check_notification')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.trigger) {
+                        // 检查通知权限是否已授予
+                        if (Notification.permission === "granted") {
+                            // 显示通知
+                            new Notification("Hi there!", {
+                                body: "We detected some unusual activities in your camera surveillance system. Click here to view the live stream.",
+                                icon: "a-simple-button.png"
+                            });
+                        }
+                    }
+                    // 设置下一次轮询（例如，5秒后）
+                    setTimeout(checkForNotification, 50);
+                }).catch(error => console.error("Error checking for notification:", error));
+        }
     </script>
 </body>
 </html>
