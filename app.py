@@ -58,7 +58,7 @@ def start_video_writer(camera_id):
     p = subprocess.Popen(command, stdin=subprocess.PIPE)
     return p, filepath
 
-def detect_cameras(limit=10):
+def detect_cameras(limit=1):
     available_cameras = []
     for i in range(limit):
         cap = cv2.VideoCapture(i)
